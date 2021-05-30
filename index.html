@@ -241,6 +241,11 @@
     </div>
 
     <script src="https://unpkg.com/vue"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('service-worker.js');
+      }
+    </script>
     <script src="./products.js"></script>
     <script>
       const webstore = new Vue({
