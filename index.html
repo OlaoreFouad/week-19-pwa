@@ -1,300 +1,316 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>VueJS Test Depot</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css" integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.2/css/all.min.css"
+      integrity="sha512-HK5fgLBL+xu6dm/Ii3z4xhlSUyZgTT9tuc/hSrtw6uzJOvgRr2a9jyxxT1ely+B+xFAmJKVSTbpM/CuL7qxO8w=="
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link rel="manifest" href="petstore.webmanifest">
 
     <style>
+      body {
+        padding: 10px;
+      }
 
-        body {
-            padding: 10px;
-        }
+      * {
+        font-family: "Trebuchet MS", "Lucida Sans Unicode", "Lucida Grande",
+          "Lucida Sans", Arial, sans-serif;
+      }
 
-        * { font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif; }
+      .product {
+        background-color: white;
+        box-shadow: 0.2rem 0.2rem 0.4rem #ccc;
+        width: 300px;
+        border-radius: 4px;
+        padding-bottom: 20px;
+        margin-bottom: 10px;
+        margin-right: 10px;
+      }
 
-        .product {
- 
-            background-color: white;
-            box-shadow: .2rem .2rem .4rem #ccc;
-            width: 300px;
-            border-radius: 4px;
-            padding-bottom: 20px;
-            margin-bottom: 10px;
-            margin-right: 10px;
+      .product img {
+        width: 100%;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        height: 300px;
+      }
 
-        }
+      .product h2 {
+        text-align: center;
+        margin: 0;
+      }
 
-        .product img {
-            width: 100%;
-            border-top-left-radius: 4px;
-            border-top-right-radius: 4px;
-            height: 300px;
-        }
+      .product p {
+        line-height: 1.5;
+        padding: 0 20px;
+      }
 
-        .product h2 {
-            text-align: center;
-            margin: 0;
-        }
+      .button {
+        color: white;
+        padding: 7.5px 25px;
+        background-color: darkblue;
+        outline: none;
+        border-radius: 4px;
+        border: none;
+        margin-right: 20px;
+      }
 
-        .product p {
-            line-height: 1.5;
-            padding: 0 20px;
-        }
-
-        .button {
-            color: white;
-            padding: 7.5px 25px;
-            background-color: darkblue;
-            outline: none;
-            border-radius: 4px;
-            border: none;
-            margin-right: 20px;
-        }
-
-        .button:disabled, .button[disabled="true"] {
-            background-color: rgb(166, 166, 209);
-        }
+      .button:disabled,
+      .button[disabled="true"] {
+        background-color: rgb(166, 166, 209);
+      }
     </style>
+  </head>
+  <body>
+    <div id="app">
+      <button v-on:click="showCheckout">
+        ({{ cartItemCount }}) <i class="fas fa-cart-plus"></i> Checkout
+      </button>
 
-</head>
-<body>
+      <main style="display: flex; flex-wrap: wrap">
+        <div
+          class="product"
+          v-if="showProduct"
+          v-for="product in sortedProducts"
+        >
+          <!-- <figure> -->
+          <img v-bind:src="product.image" />
+          <!-- </figure> -->
+          <h2 v-text="product.title"></h2>
+          <p v-html="product.description"></p>
+          <p>Price: {{ product.price }} Dhs</p>
 
-    <div id="app" >
+          <div>
+            <button
+              class="button"
+              v-on:click="addToCart(product)"
+              v-if="canAddToCart(product)"
+            >
+              Add To Cart
+            </button>
+            <button class="button" disabled="disabled" v-else>
+              Add To Cart Disabled
+            </button>
 
-        <button v-on:click="showCheckout" > ({{ cartItemCount }}) <i class="fas fa-cart-plus"></i> Checkout</button>
-        
-        <main style="display: flex; flex-wrap: wrap">
+            <span v-if="product.availableInventory == cartCount(product.id)">
+              All Out!
+            </span>
+            <span
+              v-else-if="product.availableInventory - cartCount(product.id) < 5"
+            >
+              Only {{ product.availableInventory - cartCount(product.id) }}
+              left!
+            </span>
+            <span v-else>Buy Now!</span>
+          </div>
 
-            <div class="product" v-if="showProduct" v-for="product in sortedProducts" >
-                <!-- <figure> -->
-                <img v-bind:src="product.image">
-                <!-- </figure> -->
-                <h2 v-text="product.title" ></h2>
-                <p v-html="product.description" ></p>
-                <p>Price: {{ product.price }} Dhs</p>
-    
-                <div >
-    
-                    <button class="button" v-on:click="addToCart(product)" v-if="canAddToCart(product)" >Add To Cart</button>
-                    <button class="button" disabled="disabled" v-else >Add To Cart Disabled</button>
+          <div>
+            <span v-for="n in product.rating">★</span>
+            <span v-for="n in (5 - product.rating)">☆</span>
+          </div>
+        </div>
 
-                    <span v-if="product.availableInventory == cartCount(product.id)" >
-                        All Out!
-                    </span>
-                    <span v-else-if="product.availableInventory - cartCount(product.id) < 5">
-                        Only {{ product.availableInventory - cartCount(product.id) }} left!
-                    </span>
-                    <span v-else>Buy Now!</span>
-    
+        <div class="checkout" v-else>
+          <h2>Checkout Page</h2>
+
+          <div class="container">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="firstName">First Name</label>
+                  <input
+                    type="text"
+                    id="firstName"
+                    v-model="order.firstName"
+                    class="form-control"
+                    placeholder="First Name"
+                  />
                 </div>
-
-                <div>
-                    <span v-for="n in product.rating" >★</span>
-                    <span v-for="n in (5 - product.rating)">☆</span>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="lastName">Last Name</label>
+                  <input
+                    type="text"
+                    id="lastName"
+                    v-model="order.lastName"
+                    class="form-control"
+                    placeholder="Last Name"
+                  />
                 </div>
+              </div>
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="address">Address</label>
+                  <input
+                    type="text"
+                    id="address"
+                    v-model="order.address"
+                    class="form-control"
+                    placeholder="Address"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="city">City</label>
+                  <input
+                    type="text"
+                    id="city"
+                    v-model="order.city"
+                    class="form-control"
+                    placeholder="City"
+                  />
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="state">State</label>
+                  <select id="state" v-model="order.state" class="form-control">
+                    <option value="" disabled>State</option>
+                    <option v-for="(state, key) in states" v-bind:value="state">
+                      {{ key }}
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="zip">Zip</label>
+                  <input
+                    type="text"
+                    id="zip"
+                    v-model="order.zip"
+                    class="form-control"
+                  />
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-check">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="gift"
+                    value="true"
+                    v-model="order.gift"
+                    v-bind:true-value="order.sendAsGift"
+                    v-bind:false-value="order.dontSendAsGift"
+                  />
+                  <label class="form-check-label" for="gift">
+                    Ship as Gift?
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="home">Home</label>
+                  <input type="radio" value="Home" v-model="order.method" />
+                  <label for="business">Business</label>
+                  <input type="radio" value="Business" v-model="order.method" />
+                </div>
+              </div>
             </div>
 
-            <div class="checkout" v-else>
-                <h2>Checkout Page</h2>
+            <div class="jumbotron">
+              <h2>Order Information</h2>
+              <p>Firstname: {{ order.firstName }}</p>
+              <p>Lastname: {{ order.lastName }}</p>
+              <p>Address: {{ order.address }}</p>
+              <p>City: {{ order.city }}</p>
+              <p>State: {{ order.state }}</p>
+              <p>ZIP / Postal Code: {{ order.zip }}</p>
+              <p>Ship as Gift: {{ order.gift }}</p>
+              <p>Method Of Delivery: {{ order.method }}</p>
 
-                <div class="container">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="firstName">First Name</label>
-                                <input 
-                                    type="text" 
-                                    id="firstName" 
-                                    v-model="order.firstName" 
-                                    class="form-control" 
-                                    placeholder="First Name"
-                                >
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="lastName">Last Name</label>
-                                <input 
-                                    type="text" 
-                                    id="lastName" 
-                                    v-model="order.lastName" 
-                                    class="form-control" 
-                                    placeholder="Last Name">
-                            </div>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="address">Address</label>
-                                <input 
-                                    type="text" 
-                                    id="address" 
-                                    v-model="order.address" 
-                                    class="form-control" 
-                                    placeholder="Address">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="city">City</label>
-                                <input 
-                                    type="text" 
-                                    id="city" 
-                                    v-model="order.city" 
-                                    class="form-control" 
-                                    placeholder="City">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="state">State</label>
-                                <select id="state" v-model="order.state" class="form-control">
-                                    <option value="" disabled>State</option>
-                                    <option v-for="(state, key) in states" v-bind:value="state">{{ key }}</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="zip">Zip</label>
-                                <input type="text" id="zip" v-model="order.zip" class="form-control">
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-check">
-                                <input 
-                                    class="form-check-input" 
-                                    type="checkbox" 
-                                    id="gift" 
-                                    value="true"
-                                    v-model="order.gift"
-                                    v-bind:true-value="order.sendAsGift"
-                                    v-bind:false-value="order.dontSendAsGift"
-                                >
-                                <label class="form-check-label" for="gift" >
-                                  Ship as Gift?
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="home">Home</label>
-                                <input type="radio" value="Home" v-model="order.method">
-                                <label for="business">Business</label>
-                                <input type="radio" value="Business" v-model="order.method">
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="jumbotron">
-                        <h2>Order Information</h2>
-                        <p>Firstname: {{ order.firstName }}</p>
-                        <p>Lastname: {{ order.lastName }}</p>
-                        <p>Address: {{ order.address }}</p>
-                        <p>City: {{ order.city }}</p>
-                        <p>State: {{ order.state }}</p>
-                        <p>ZIP / Postal Code: {{ order.zip }}</p>
-                        <p>Ship as Gift: {{ order.gift }}</p>
-                        <p>Method Of Delivery: {{ order.method }}</p>
-
-                        <button v-on:click="submitForm" >Place Order</button>
-                    </div>
-
-                </div>
-
+              <button v-on:click="submitForm">Place Order</button>
             </div>
-
-        </main>
-
+          </div>
+        </div>
+      </main>
     </div>
-    
-    <script src="https://unpkg.com/vue" ></script>
-    <script src="./products.js" ></script>
-    <script >
-        const webstore = new Vue({
-            el: '#app',
-            data: {
-                sitename: 'VueJS Test Depot',
-                // product: {
-                //     id: 1001,
-                //     title: '5 Pcs. Pots and Pans',
-                //     description: 'A very expensive yet <em>outstanding piece of kitchen utilities</em>. Helps in cooking indomie(before?), spaghetti and our beloved pancake.',
-                //     price: 85,
-                //     image: 'images/pots.jpg',
-                //     availableInventory: 10,
-                //     rating: 3
-                // },
-                products: products,
-                states: {
-                    AL: 'Alabama',
-                    AR: 'Arizona',
-                    CA: 'Carlifonia',
-                    NV: 'Nevada'
-                },
-                order: {
-                    firstName: '',
-                    lastName: '',
-                    address: '',
-                    city: '',
-                    state: '',
-                    zip: '',
-                    gift: true,
-                    method: 'Home',
-                    sendAsGift: 'Send as a Gift',
-                    dontSendAsGift: 'Don\'t send as gift'
-                },
-                cart: [],
-                showProduct: true
-            },
-            methods: {
-                addToCart: function(product) {
-                    this.cart.push(product.id);
-                },
-                showCheckout: function() {
-                    this.showProduct = !this.showProduct;
-                },
-                submitForm: function() {
-                    alert('Order Submitted!');
-                },
-                canAddToCart: function(product) {
-                    return product.availableInventory > this.cartItemCount;
-                },
-                cartCount: function(id) {
-                    let count = 0;
-                    for (let i = 0; i < this.cart.length; i++) {
-                        if (this.cart[i] == id) {
-                            count++;
-                        }
-                    }
-                    return count;
-                }
-            },
-            computed: {
-                cartItemCount: function() {
-                    return this.cart.length;
-                },
-                sortedProducts: function() {
-                    let productsArray = this.products.slice(0);
-                    function compare(a, b) {
-                        if (a.price > b.price) {
-                            return 1;
-                        }
-                        if (a.price < b.price) {
-                            return -1;
-                        }
-                        return 0;
-                    }
-                    return this.products.sort(compare);
-                }
-            }
-        })
-    </script>
 
-</body>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="./products.js"></script>
+    <script>
+      const webstore = new Vue({
+        el: "#app",
+        data: {
+          sitename: "VueJS Test Depot",
+          products: products,
+          states: {
+            AL: "Alabama",
+            AR: "Arizona",
+            CA: "Carlifonia",
+            NV: "Nevada",
+          },
+          order: {
+            firstName: "",
+            lastName: "",
+            address: "",
+            city: "",
+            state: "",
+            zip: "",
+            gift: true,
+            method: "Home",
+            sendAsGift: "Send as a Gift",
+            dontSendAsGift: "Don't send as gift",
+          },
+          cart: [],
+          showProduct: true,
+        },
+        methods: {
+          addToCart: function (product) {
+            this.cart.push(product.id);
+          },
+          showCheckout: function () {
+            this.showProduct = !this.showProduct;
+          },
+          submitForm: function () {
+            alert("Order Submitted!");
+          },
+          canAddToCart: function (product) {
+            return product.availableInventory > this.cartItemCount;
+          },
+          cartCount: function (id) {
+            let count = 0;
+            for (let i = 0; i < this.cart.length; i++) {
+              if (this.cart[i] == id) {
+                count++;
+              }
+            }
+            return count;
+          },
+        },
+        computed: {
+          cartItemCount: function () {
+            return this.cart.length;
+          },
+          sortedProducts: function () {
+            let productsArray = this.products.slice(0);
+            function compare(a, b) {
+              if (a.price > b.price) {
+                return 1;
+              }
+              if (a.price < b.price) {
+                return -1;
+              }
+              return 0;
+            }
+            return this.products.sort(compare);
+          },
+        },
+      });
+    </script>
+  </body>
 </html>
