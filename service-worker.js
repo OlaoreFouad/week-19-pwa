@@ -21,3 +21,12 @@ self.addEventListener('install', (e) => {
         })
     )
 })
+
+self.addEventListener('fetch', (e) => {
+    e.respondWith(
+        caches.match(e.request).then(function(r) {
+            console.log('Fetching resource');
+            return r;
+        })
+    )
+})
